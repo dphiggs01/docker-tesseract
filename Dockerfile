@@ -1,5 +1,6 @@
 FROM ubuntu:15.10
 
+# development tools to based install
 RUN apt-get update && apt-get install -y \
   autoconf \
   automake \
@@ -20,6 +21,7 @@ RUN apt-get update && apt-get install -y \
   zlib1g-dev
 
 
+# Compile tesseract dependencies
 RUN mkdir ~/temp \
   && cd ~/temp/ \
   && wget http://www.leptonica.org/source/leptonica-1.73.tar.gz \
@@ -30,6 +32,7 @@ RUN mkdir ~/temp \
   && make install \
   && ldconfig
 
+# Compile tesseract 3.04.01 from source
 RUN cd ~/temp/ \
   && wget http://github.com/tesseract-ocr/tesseract/archive/3.04.01.tar.gz \
   && tar xvf 3.04.01.tar.gz \
@@ -46,12 +49,18 @@ RUN cd ~/temp/ \
 ENV TESSDATA_PREFIX /usr/local/share/tesseract-ocr
 
 
+# Install pytesseract
 RUN pip install --upgrade pip \
   && pip install pytesseract==0.1.6  
 
+# Add textcleaner from Fred's ImageMagick Scripts
+# http://www.fmwconcepts.com/imagemagick/textcleaner/
 ADD ./bin/textcleaner /usr/local/bin
+
+# Add sample images for testing
 ADD ./data/* /data/
 
+# create user tesseract for use with this server
 RUN groupadd -r tesseract && useradd -r -g tesseract tesseract
 USER tesseract
 
